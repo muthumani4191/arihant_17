@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+	<record model="ir.module.category" id="base.module_category_arihant">
+        <field name="description">Arihant main group...</field>
+        <field name="sequence">8</field>
+    </record>
+
+    <record id="group_arihant_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="category_id" ref="base.module_category_arihant"/>
+    </record>
+    
+    <record id="group_arihant_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="base.module_category_arihant"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <menuitem id="arihant_menu_job_root" name="Job Order" parent="arihant_menu_root" sequence="9"/>
+
+    <!--Product -->
+    <record id="product_raw_form_view" model="ir.ui.view">
+        <field name="name">product.raw.form.view</field>
+        <field name="model">product.template</field>
+        <field name="priority">5</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <page name="invoicing" position="after">
+                <page string="Raw Material" name="raw" groups="mm_arihant.group_arihant_manager">
+                    <field name="product_raw_line">
+                        <tree name="raw_material" string="Raw" editable="bottom">
+                            <field name="product_id" options="{'no_open':True,'no_create': True}"/>
+                            <field name="product_qty"/>
+                            <field name="product_uom_id" options="{'no_open':True,'no_create': True}"/>
+                        </tree>
+                    </field>
+                </page>
+            </page>
+          </field>
+    </record>
+
+    <!-- Stock Picking -->
+
+    <record id="view_picking_form_inherit" model="ir.ui.view">
+        <field name="name">view.picking.form.inherit</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="sale_id" invisble="1"/>
+                <field name="job_id" options="{'no_open':True,'no_create': True}" domain="[('sale_id','=',sale_id)]" readonly="state in ['done']"/>
+                <field name="jh_no" readonly="state in ['done']"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Purchase Order -->
+
+    <record id="purchase_order_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="sale_id" invisible="1"/>
+                <field name="job_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Sale Order -->
+
+    <record id="view_sale_order_job" model="ir.ui.view">
+        <field name="name">view.sale.order.job</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_view_invoice']" position="after">
+                <button type="object"
+                    name="action_view_job"
+                    class="oe_stat_button"
+                    icon="fa-gavel"
+                    invisible="job_count == 0" groups="mm_arihant.group_arihant_user">
+                    <field name="job_count" widget="statinfo" string="Job"/>
+                </button>
+                <button type="object"
+                    name="action_view_purchase"
+                    class="oe_stat_button"
+                    icon="fa-xing"
+                    invisible="purchase_count == 0" groups="mm_arihant.group_arihant_user">
+                    <field name="purchase_count" widget="statinfo" string="Purchase"/>
+                </button>
+            </xpath>
+            <xpath expr="//button[@name='action_draft']" position="after">
+<!--
+                <button name="action_purchase_create" invisible="state != 'sale'" type="object" string="Create Purchase" data-hotkey="w"/>
+-->
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Job Order -->
+
+    <record id="view_job_order_tree" model="ir.ui.view">
+        <field name="name">view.job.order.tree</field>
+        <field name="model">job.order</field>
+        <field name="arch" type="xml">
+            <tree string="Job Order">
+                <field name="sale_id"/>
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="jh_no"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+   <record id="view_job_order_form" model="ir.ui.view">
+        <field name="name">view.job.order.form</field>
+        <field name="model">job.order</field>
+        <field name="arch" type="xml">
+            <form string="Job Order">
+                <header>
+                    <button name="open_configure" string="Configure" type="object" class="btn-secondary" invisible="state in ('configure', 'in_progress','Done','Rejected','Cancelled')"/>
+                    <button name="create_testing" string="Create Testing" type="object" class="btn-secondary" invisible="state in ('draft', 'in_progress','Done','Rejected','Cancelled') or testing_count &gt;= 1"/>
+                    <button name="create_purchase" string="Create Purchase" type="object" class="btn-secondary" invisible="state in ('draft', 'in_progress','Done','Rejected','Cancelled')"/>
+                    <button name="create_progres" string="Create Progress" type="object" class="btn-secondary" invisible="state in ('draft', 'in_progress','Done','Rejected','Cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,Done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <h3>
+                            <field name="job_number" readonly="1"/>
+                        </h3>
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_testing"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o"
+                            invisible="testing_count == 0">
+                            <field name="testing_count" widget="statinfo" string="Testing"/>
+                        </button>
+                        <button type="object"
+							name="action_view_purchase"
+							class="oe_stat_button"
+							icon="fa-xing"
+							invisible="purchase_count == 0" groups="mm_arihant.group_arihant_user">
+							<field name="purchase_count" widget="statinfo" string="Purchase"/>
+						</button>
+                        <button name="action_view_picking"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o"
+                            invisible="picking_count == 0">
+                            <field name="picking_count" widget="statinfo" string="Inward"/>
+                        </button>
+                        <button name="action_view_progress"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o"
+                            invisible="progress_count == 0">
+                            <field name="progress_count" widget="statinfo" string="Manufacturing"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="company_id" invisible="1"/>
+                            <field name="sale_id" invisible="1"/>
+                            <field name="product_id" readonly="1" string="Component Name"/>
+                        </group>
+                        <group>
+                            <field name="product_uom_qty" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="jh_no" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']"/>
+                            <field name="drawing_no" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']"/>
+                            <field name="yeild_per" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']"/>
+                        </group>
+                        <group>
+                            <field name="job_date" required="state in ['configure']" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']"/>
+                            <field name="fg_exp_date" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']"/>
+                            <field name="actual_date" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="bom_job" string="BOM">
+                            <group>
+                                <group>
+                                    <field name="product_qty" readonly="1" invisible="1"/>
+                                </group>
+                                <group>
+                                    <field name="required_qty" readonly="1" invisible="1"/>
+                                </group>
+                            </group>
+                            <field name="job_bom_line" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']">
+                                <tree name="bom" string="Bom" editable="bottom">
+                                    <field name="product_id" options="{'no_open':True,'no_create': True}"/>
+                                    <field name="product_qty" />
+                                    <field name="product_uom_id" options="{'no_open':True,'no_create': True}"/>
+<!--
+                                    <field name="customer_qty" invisible="1"/>
+-->
+                                    <field name="required_qty"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="bom_flow" string="Process Flow">
+							<field name="job_process_line" readonly="state in ['configure', 'in_progress','Done','Rejected','Cancelled']">
+								<tree name="bom_flow" string="Bom Flow" editable="bottom" create="false">
+									<field name="flow_id" readonly="1"/>
+									<field name="included"/>
+								</tree>
+							</field>
+						</page>
+                        <page name="bom_flow" string="Process Cycle">
+							<field name="flow_cycle_line" readonly="1">
+								<tree name="bom_flow" string="Bom Flow" editable="bottom" create="false" edit="false">
+									<field name="flow_start_id" readonly="1"/>
+									<field name="flow_end_id" readonly="1"/>
+								</tree>
+							</field>
+						</page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="view_job_order_search" model="ir.ui.view">
+        <field name="name">view.job.order.search</field>
+        <field name="model">job.order</field>
+        <field name="arch" type="xml">
+            <search string="Job Order">
+                <field name="name"/>
+                <field name="sale_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Sale" name="sale_group" domain="[]" context="{'group_by': 'sale_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <record id="action_job_order" model="ir.actions.act_window">
+        <field name="name">Job Order</field>
+        <field name="res_model">job.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_job_order_search"/>
+        <field name="context">{'search_default_sale_group':1}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new quotation, the first step of a new sale!
+            </p><p>
+                Once the quotation is confirmed, it becomes a sales order.<br/> You will be able to create an invoice and collect the payment.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_job_order" action="action_job_order" parent="arihant_menu_job_root" name="Job Order" sequence="1"/>
+
+
+</odoo>
