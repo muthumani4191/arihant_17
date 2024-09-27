@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	
+	
+	<menuitem id="arihant_menu_root" name="Manufacturing" web_icon="mm_arihant,static/description/logo.png" sequence="31"/>
+    <menuitem id="arihant_menu_sub_root" name="Testing" parent="arihant_menu_root" sequence="10"/>
+    <menuitem id="arihant_menu_config_root" name="Configuration" parent="arihant_menu_root" sequence="15"/>
+
+    <!-- TESTING VIEWS -->
+
+    <record id="testing_sheet_tree" model="ir.ui.view">
+        <field name="name">testing.sheet.tree</field>
+        <field name="model">testing.sheet</field>
+        <field name="arch" type="xml">
+            <tree string="Testing Sheet" create="false">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    
+   <record id="testing_sheet_form" model="ir.ui.view">
+        <field name="name">testing.sheet.form</field>
+        <field name="model">testing.sheet</field>
+        <field name="arch" type="xml">
+            <form string="Testing Sheet" create="false">
+				<header>
+					<button name="open_testing" string="Open Testing" type="object" class="btn-secondary" invisible="state in ('in_progress','Done','Rejected','Cancelled')"/>
+					<button name="open_complete" string="Completed" type="object" class="btn-secondary" invisible="state in ('draft','Done','Rejected','Cancelled')"/>
+					<button name="open_rejected" string="Rejected" type="object" class="btn-secondary" invisible="state in ('draft','Done','Rejected','Cancelled')"/>
+					<field name="state" widget="statusbar" statusbar_visible="draft,in_progress,Done"/>
+				</header>
+				<sheet>
+					<div class="oe_title">
+						<h1>
+							<field name="name" readonly="1"/>
+						</h1>
+					</div>
+					<group>
+						<group name="testing" string="Testing Details">
+							
+							<field name="test_no" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="test_date" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="material_status" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="mechanical_no" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="micro_no" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="testing_person_id" options="{'no_open':True,'no_create': True}" domain="[('parent_id','=',partner_id)]" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="sale_id" invisible="1"/>
+							<field name="job_id" invisible="1"/>
+						</group>
+						<group name="bill" string="Vendor Details">
+							<field name="partner_id" options="{'no_open':True,'no_create': True}" domain="[('supplier_rank','=',True),('parent_id','=',False)]" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="bill_no" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="bill_date" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="job_no" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="job_date" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="dc_no" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="dc_date" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="testing_elements" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+							<field name="crack_testing" required="state in ['in_progress']" readonly="state in ['draft','Done','Rejected','Cancelled']"/>
+						</group>
+					</group>
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids"/>
+					<field name="activity_ids"/>
+					<field name="message_ids"/>
+				</div>
+            </form>
+        </field>
+    </record>
+
+ 
+    <record id="testing_sheet_search" model="ir.ui.view">
+        <field name="name">testing.sheet.search</field>
+        <field name="model">testing.sheet</field>
+        <field name="arch" type="xml">
+            <search string="Testing Sheet">
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+ 
+
+    <record id="action_testing_sheet" model="ir.actions.act_window">
+        <field name="name">Testing Sheet</field>
+        <field name="res_model">testing.sheet</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="testing_sheet_search"/>
+        <field name="context">{}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new quotation, the first step of a new sale!
+            </p><p>
+                Once the quotation is confirmed, it becomes a sales order.<br/> You will be able to create an invoice and collect the payment.
+            </p>
+        </field>
+    </record>
+    
+    <menuitem id="menu_testing_sheet" action="action_testing_sheet" parent="arihant_menu_sub_root" name="Testing Sheet" sequence="1"/>
+
+
+	<!-- Job Flow VIEWS -->
+	
+	
+	<record id="job_flow_tree" model="ir.ui.view">
+        <field name="name">job.flow.tree</field>
+        <field name="model">job.flow</field>
+        <field name="arch" type="xml">
+            <tree string="Job Flow">
+                <field name="name"/>
+                <field name="sequence"/>
+                <field name="code_status"/>
+            </tree>
+        </field>
+    </record>
+    
+   <record id="job_flow_form" model="ir.ui.view">
+        <field name="name">job.flow.form</field>
+        <field name="model">job.flow</field>
+        <field name="arch" type="xml">
+            <form string="Testing Sheet">
+				<sheet>
+					<group>
+						<group>
+							<field name="name"/>
+							<field name="sequence"/>
+							<field name="product_id" options="{'no_open':True,'no_create': True}"/>
+						</group>
+						<group>
+							<field name="code"/>
+							<field name="active"/>
+							<field name="code_status"/>
+						</group>
+					</group>
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids"/>
+					<field name="activity_ids"/>
+					<field name="message_ids"/>
+				</div>
+            </form>
+        </field>
+    </record>
+
+ 
+    <record id="job_flow_search" model="ir.ui.view">
+        <field name="name">job.flow.search</field>
+        <field name="model">job.flow</field>
+        <field name="arch" type="xml">
+            <search string="Job Flow">
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+ 
+
+    <record id="action_job_flow" model="ir.actions.act_window">
+        <field name="name">Job Flow</field>
+        <field name="res_model">job.flow</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="job_flow_search"/>
+        <field name="context">{}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new quotation, the first step of a new sale!
+            </p><p>
+                Once the quotation is confirmed, it becomes a sales order.<br/> You will be able to create an invoice and collect the payment.
+            </p>
+        </field>
+    </record>
+    
+    <menuitem id="menu_job_flow" action="action_job_flow" parent="arihant_menu_config_root" name="Job Flow" sequence="1"/>
+	
+	
+
+</odoo>

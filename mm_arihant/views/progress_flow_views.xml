@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	
+	
+
+    <!-- TESTING VIEWS -->
+
+    <record id="job_progress_tree" model="ir.ui.view">
+        <field name="name">job.progress.tree</field>
+        <field name="model">job.progress</field>
+        <field name="arch" type="xml">
+            <tree string="Job Progress" create="false">
+                <field name="name"/>
+                <field name="jh_no"/>
+                <field name="job_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    
+   <record id="job_progress_form" model="ir.ui.view">
+        <field name="name">job.progress.form</field>
+        <field name="model">job.progress</field>
+        <field name="arch" type="xml">
+            <form string="Job Progress" create="false">
+				<header>
+					<button name="open_progress" string="Open Progress" type="object" class="btn-secondary" invisible="state in ('in_progress','Done','Rejected','Cancelled')"/>
+					<button name="%(action_stock_delivery)d" string="Delivery" type="action" class="btn-secondary" invisible="state in ('draft','Done','Rejected','Cancelled')"/>
+					<button name="%(action_stock_receipt)d" string="Receipt" type="action" class="btn-secondary" invisible="state in ('draft','Done','Rejected','Cancelled')"/>
+					<field name="state" widget="statusbar" statusbar_visible="draft,in_progress,Done"/>
+				</header>
+				<sheet>
+					<div class="oe_title">
+						<h1>
+							<field name="name" readonly="1"/>
+						</h1>
+					</div>
+					<div class="oe_button_box" name="button_box">
+						<button name="action_view_production"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-gear"
+                            invisible="prd_count == 0">
+                            <div class="d-flex flex-column">
+								<div class="o_field_widget o_stat_info align-items-baseline flex-row gap-1 me-1">
+									<span class="o_stat_text">Production</span>
+								</div>
+								<div class="o_field_widget o_stat_info align-items-baseline flex-row gap-1 me-1">
+									<span class="o_stat_value">Progress :<field name="prd_inprogress"/></span>
+									<span class="o_stat_value">Done :<field name="prd_completed"/></span>
+								</div>
+								
+							</div>
+                        </button>
+                        <button name="action_view_outward"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-truck"
+                            invisible="dc_count == 0">
+                            <field name="dc_count" widget="statinfo" string="Delivery"/>
+                        </button>
+                        <button name="action_view_inward"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-ticket"
+                            invisible="receipt_count == 0">
+                            <field name="receipt_count" widget="statinfo" string="Receipt"/>
+                        </button>
+                        <button name="action_view_scrap"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-spinner"
+                            invisible="scrap_count == 0">
+                            <field name="scrap_count" widget="statinfo" string="Scrap"/>
+                        </button>
+                     </div>
+					<group>
+						<group>
+							<field name="prd_count" invisible="1"/>
+							<field name="company_id" invisible="1"/>
+							<field name="job_id" readonly="1"/>
+							<field name="sale_id" readonly="1"/>
+							<field name="flow_id" readonly="1" invisible="1"/>
+							<field name="flow_type" readonly="1" invisible="1"/>
+							<field name="jh_no" readonly="1"/>
+							<field name="raw_uom_qty" readonly="1" invisible="flow_type != 'start'"/>
+							
+						</group>
+						<group>
+							<field name="product_id" readonly="1"/>
+							<field name="product_uom_qty" readonly="1"/>
+							<field name="cutting_size" readonly="1" invisible="flow_type != 'start'"/>
+							<field name="delivery_uom_qty" readonly="1" />
+							<field name="received_uom_qty" readonly="1"/>
+							<field name="scrap_uom_qty" readonly="1"/>
+							
+							
+						</group>
+					</group>
+					<group>
+						<group name="production_inprogress" string="Production In-Progress">
+							<field name="prd_in_uom_qty" readonly="1"/>
+						</group>
+						<group name="production_completed" string="Production Completed">
+							<field name="prd_out_uom_qty" readonly="1"/>
+						</group>
+					</group>
+				</sheet>
+				<div class="oe_chatter">
+					<field name="message_follower_ids"/>
+					<field name="activity_ids"/>
+					<field name="message_ids"/>
+				</div>
+            </form>
+        </field>
+    </record>
+    
+    <record id="job_progress_kanban" model="ir.ui.view">
+        <field name="name">job.progress.kanban</field>
+        <field name="model">job.progress</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" sample="1" quick_create="false">
+				<field name="name"/>
+				<field name="product_id"/>
+				<field name="product_uom_qty"/>
+				<field name="jh_no"/>
+				<progressbar field="state" colors='{"Done": "success", "in_progress": "warning", "Rejected": "danger"}'/>
+				<templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_record_top mb16">
+                                <div class="o_kanban_record_headings mt4">
+                                    <span class="o_helpdesk_activity_box_title">
+										<span style="text-align:center;font-weight: bold;font-size: 20px;color:#017e84;padding:30px;"><field name="name" display="full" class="o_text_block"/></span>
+									</span>
+								</div>
+							</div>
+						</div>
+						<!-- -->
+						    <div class="oe_kanban_details">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            JH Number - <field name="jh_no" placeholder="JH Number"/>
+                                        </strong>
+                                        <span t-if="record.job_id.raw_value" class="o_kanban_record_subtitle">
+                                            Job Number - <field name="job_id"/>
+                                        </span>
+                                        <span t-if="record.product_id.raw_value" class="o_kanban_record_subtitle">
+                                            Product - <field name="product_id"/>
+                                        </span>
+                                        <span t-if="record.product_uom_qty.raw_value" class="o_kanban_record_subtitle">
+                                            Quantity - <field name="product_uom_qty"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+					</t>
+				</templates>
+			</kanban>
+		</field>
+	</record>
+
+ 
+    <record id="job_progress_search" model="ir.ui.view">
+        <field name="name">job.progress.search</field>
+        <field name="model">job.progress</field>
+        <field name="arch" type="xml">
+            <search string="Job Progress">
+                <field name="name"/>
+                 <group expand="0" string="Group By">
+                    <filter string="Sale" name="sale_group" domain="[]" context="{'group_by': 'sale_id'}"/>
+                    <filter string="Job Number" name="job_group" domain="[]" context="{'group_by': 'job_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+ 
+
+    <record id="action_job_progress" model="ir.actions.act_window">
+        <field name="name">Job Progress</field>
+        <field name="res_model">job.progress</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="job_progress_search"/>
+        <field name="context">{'search_default_sale_group':1,'search_default_job_group':1}</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new quotation, the first step of a new sale!
+            </p><p>
+                Once the quotation is confirmed, it becomes a sales order.<br/> You will be able to create an invoice and collect the payment.
+            </p>
+        </field>
+    </record>
+    
+    <menuitem id="menu_job_progress" action="action_job_progress" parent="arihant_menu_job_root" name="MRP Progress" sequence="2"/>
+
+	
+
+</odoo>
