@@ -6,7 +6,7 @@
     'name': 'Arihant',
     'version': '1.2',
     'category': 'Arihant/Manufacturing',
-    'summary': 'Sales for the product manufacturing on raw materials',
+    'summary': 'Sales for the product manufacturing on raw materials data',
     'description': """
 This module contains all the common features of Sales Management and eCommerce.
     """,
